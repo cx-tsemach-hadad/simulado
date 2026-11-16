@@ -64,7 +64,7 @@
     "commander": "^2.20.3",
     "cors": "^2.8.5",
     "deep-equal": "^1.1.1",
-    "ejs": "^2.7.4",
+    "ejs": "^3.1.10",
     "express": "^4.17.1",
     "lodash.merge": "^4.6.2",
     "query-string": "^6.9.0",
