@@ -5,7 +5,6 @@ const spdy = require('spdy');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
 const PortStore = require('./stores/PortStore');
 const ResponseStore = require('./stores/ResponseStore');
 const RequestStore = require('./stores/RequestStore');
@@ -43,12 +42,13 @@ app.get('/simulado/export/lines', (req, res) => {
     return res.status(400).send('file is required');
   }
 
-  execFile('wc', ['-l', '--', file], (error, stdout) => {
+  fs.readFile(file, 'utf8', (error, content) => {
     if (error) {
       return res.status(404).send('Unable to read file');
     }
 
-    res.status(200).send({ file, lines: parseInt(stdout, 10) });
+    const lines = content.split('\n').length - 1;
+    res.status(200).send({ file, lines });
   });
 });
 
