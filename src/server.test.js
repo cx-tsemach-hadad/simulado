@@ -1,3 +1,5 @@
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import request from 'supertest';
 import portscanner from 'portscanner';
@@ -215,6 +217,35 @@ describe('src/server', () => {
             expect(res.body).to.deep.equal(allRequests);
           })
           .expect(200, done);
+      });
+    });
+
+    describe('GET /simulado/export/lines', () => {
+      let exportFile;
+
+      beforeEach(() => {
+        exportFile = path.join(os.tmpdir(), `simulado-export-${process.pid}.txt`);
+        fs.writeFileSync(exportFile, 'one\ntwo\nthree\n');
+      });
+
+      afterEach(() => {
+        fs.unlinkSync(exportFile);
+      });
+
+      it('returns the number of lines in the exported file', done => {
+        request(server)
+          .get('/simulado/export/lines')
+          .query({ file: exportFile })
+          .expect(res => {
+            expect(res.body.lines).to.equal(3);
+          })
+          .expect(200, done);
+      });
+
+      it('returns 400 when the file parameter is missing', done => {
+        request(server)
+          .get('/simulado/export/lines')
+          .expect(400, done);
       });
     });
 

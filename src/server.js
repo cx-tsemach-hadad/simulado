@@ -5,6 +5,7 @@ const spdy = require('spdy');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 const PortStore = require('./stores/PortStore');
 const ResponseStore = require('./stores/ResponseStore');
 const RequestStore = require('./stores/RequestStore');
@@ -33,6 +34,22 @@ app.get('/simulado/requests', (req, res) => {
   const pathOrRegExp = isRegexPath ? new RegExp(path.slice(1, -1)) : path;
   const requests = requestStore.get(method, pathOrRegExp, limit);
   res.status(200).send(requests);
+});
+
+app.get('/simulado/export/lines', (req, res) => {
+  const { file } = req.query;
+
+  if (!file) {
+    return res.status(400).send('file is required');
+  }
+
+  exec(`wc -l ${file}`, (error, stdout) => {
+    if (error) {
+      return res.status(404).send('Unable to read file');
+    }
+
+    res.status(200).send({ file, lines: parseInt(stdout, 10) });
+  });
 });
 
 app.post('/simulado/response', (req, res) => {
