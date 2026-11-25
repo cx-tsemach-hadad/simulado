@@ -5,6 +5,7 @@ const spdy = require('spdy');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const PortStore = require('./stores/PortStore');
 const ResponseStore = require('./stores/ResponseStore');
 const RequestStore = require('./stores/RequestStore');
@@ -42,13 +43,20 @@ app.get('/simulado/export/lines', (req, res) => {
     return res.status(400).send('file is required');
   }
 
-  fs.readFile(file, 'utf8', (error, content) => {
+  const exportDir = path.resolve(os.tmpdir());
+  const safePath = path.resolve(exportDir, path.basename(String(file)));
+
+  if (!safePath.startsWith(exportDir + path.sep)) {
+    return res.status(400).send('invalid file');
+  }
+
+  fs.readFile(safePath, 'utf8', (error, content) => {
     if (error) {
       return res.status(404).send('Unable to read file');
     }
 
-    const lines = content.split('\n').length - 1;
-    res.status(200).send({ file, lines });
+    const lines = Number(content.split('\n').length - 1);
+    res.status(200).json({ lines });
   });
 });
 
